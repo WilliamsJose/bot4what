@@ -2,7 +2,9 @@ import express, { json } from 'express';
 import cors from 'cors';
 import routes from './routes';
 import path from 'path';
-const PORT = 8081 // process.env.PORT
+require('dotenv').config()
+
+const PORT = process.env.PORT;
 const app = express();
 
 app.use(json());
