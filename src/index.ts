@@ -49,55 +49,5 @@ async function start(client: Whatsapp) {
     
     client.onMessage((message: Message) => {
       MessagesController.checkMessage(client, message);
-      // if (message.body === 'Hi' && message.isGroupMsg === false) {
-      //   client
-      //     .sendText(message.from, 'Welcome Venom 🕷')
-      //     .then((result) => {
-      //       console.log('result: ' + typeof result);
-      //       console.log('Result: ', result); //return object success
-      //     })
-      //     .catch((erro) => {
-      //       console.log('erro: ' + typeof erro)
-      //       console.error('Error when sending: ', erro); //return object error
-      //     });
-      // }
-
-      // if (message.body === "@everyone" && message.isGroupMsg) {
-      //   client.getGroupAdmins(message.chatId).then(admins => {
-      //     client.getContact(message.id).then(participante => {
-      //       if (admins.includes(participante)) {
-      //         mention(client, message);
-      //       } else {
-      //         client.reply(message.from, "Desculpe, apenas administradores podem usar este comando!", message.id);
-      //       }
-      //     })
-      //   })
-      // }
-
-      
     });
 }
-
-// function mention(client: Whatsapp, message: Message) {
-//   client.getGroupMembers(message.chatId).then(contact => {
-//     let contacts: Array<string> = [];
-//     let stringContacts: string = "";
-
-//     contact.forEach(c => {
-//       if (!c.isMe) {
-//         contacts.push(c.id.user)
-//         stringContacts += "@" + c.id.user + " "
-//       }
-//     })
-
-//     client.sendMentioned(message.from, "Yay! " + stringContacts, contacts)
-//       .then((result) => {
-//         console.log('result: ' + typeof result);
-//         console.log('Result: ', result); //return object success
-//       })
-//       .catch((erro) => {
-//         console.log('\n -------------------------------------------------erro: ' + typeof erro)
-//         console.error('Error when sending: ', erro); //return object error
-//       });
-//   })
-// }
