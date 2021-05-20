@@ -2,9 +2,15 @@ const venom = require('venom-bot');
 import { Message, Whatsapp } from 'venom-bot';
 import MessagesController from './controllers/MessagesController';
 import { startServer } from './server';
+import 'reflect-metadata';
+import './database';
+import createConnection from './database/index';
 
+// conecta ao SQLite
+createConnection()
+// Inicia o servidor 
 startServer();
-
+// configura e inicia o venom 
 venom
   .create(
     'venombot',
@@ -17,6 +23,7 @@ venom
       }
 
       response.type = matches[1];
+      //@ts-ignore
       response.data = new Buffer.from(matches[2], 'base64');
       var imageBuffer = response;
 
@@ -42,12 +49,12 @@ venom
   });
 
 async function start(client: Whatsapp) {
-    console.log("started ")
-    client.onAddedToGroup((chat) => {
-      console.log(chat)
-    })
-    
-    client.onMessage((message: Message) => {
-      MessagesController.checkMessage(client, message);
-    });
+  console.log("started")
+  client.onAddedToGroup((chat) => {
+    console.log(chat)
+  })
+  
+  client.onMessage((message: Message) => {
+    MessagesController.checkMessage(client, message);
+  });
 }

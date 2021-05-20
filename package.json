@@ -5,19 +5,27 @@
   "license": "MIT",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/index.ts",
+    "typeorm": "ts-node-dev node_modules/typeorm/cli.js",
+    "winrenew": "del .\\tokens\\venombot.data.json",
+    "linrenew": "rm ./tokens/venombot.data.json",
     "build": "tsc"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^9.0.2",
     "express": "^4.17.1",
-    "venom-bot": "^3.0.15"
+    "reflect-metadata": "^0.1.13",
+    "sqlite3": "^5.0.2",
+    "typeorm": "^0.2.32",
+    "uuid": "^8.3.2",
+    "venom-bot": "^3.0.16"
   },
   "devDependencies": {
     "@types/cors": "^2.8.10",
     "@types/express": "^4.17.11",
-    "@types/node": "^14.14.31",
-    "ts-node-dev": "^1.1.1",
-    "typescript": "^4.1.5"
+    "@types/node": "^15.3.0",
+    "@types/uuid": "^8.3.0",
+    "ts-node-dev": "^1.1.6",
+    "typescript": "^4.2.4"
   }
 }
