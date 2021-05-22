@@ -37,20 +37,31 @@ class QuizService {
     });
   }
 
-  // !addQuiz <nome-do-quiz>: <resposta>, <resposta>, ...
+  // !addAnswer <nome-do-quiz>: <resposta>, <resposta>, ...
   async addNewAnswer(client: Whatsapp, message: Message) {
     client.getGroupAdmins(message.chatId).then((admins) => {
       client.getContact(message.sender.id).then(async (participante) => {
         //@ts-ignore
         if (admins.some((admin) => admin.user === participante.id.user)) { 
           const repository = getCustomRepository(QuizRepository);
-          const removedCommand = message.body.replace(/!addQuiz/g, "").trim();
+          const removedCommand = message.body.replace(/!addAnswer/g, "").trim();
+          
+          if (removedCommand.length < 1 || !removedCommand.includes(":")) {
+            return client.reply(message.from, "Para adicionar uma nova resposta você deve digitar\nno formato: *!addQuiz <nome-do-quiz>: <resposta>* ", message.id);
+          }
+          
           const quizName = removedCommand.match(/^([^,]+):/g)[0].trim();
           const newAnswer = removedCommand.replace(quizName, "").trim();
-      
+
+          if (newAnswer.trim().length < 1) {
+            return client.reply(message.from, "Para adicionar uma nova resposta você deve digitar\nno formato: *!addQuiz <nome-do-quiz>: <resposta>* ", message.id);
+          }
+
           const quiz = await repository.findOne({ name: quizName.replace(/:/, "") });
 
-          console.log("addnewanswer: ", quiz)
+          if (!quiz) {
+            return client.reply(message.from, `O questionário ${quizName} não existe!`, message.id);
+          }
           
           if (quiz.status === "open") {
             const oldAnswers = quiz.answers.trim();
@@ -69,7 +80,7 @@ class QuizService {
       });
     });
   }
-
+  // removeAnswer
   // !removeQuiz <nome-do-quiz>: <resposta-a-remover>
   async removeAnswer(client: Whatsapp, message: Message) {
     client.getGroupAdmins(message.chatId).then((admins) => {
@@ -77,11 +88,15 @@ class QuizService {
         //@ts-ignore
         if (admins.some((admin) => admin.user === participante.id.user)) { 
           const repository = getCustomRepository(QuizRepository);
-          const removedCommand = message.body.replace(/!removeQuiz/g, "").trim();
+          const removedCommand = message.body.replace(/!removeAnswer/g, "").trim();
           const quizName = removedCommand.match(/^([^,]+):/g)[0].trim();
           const answerToRemove = removedCommand.replace(quizName, "").trim();
       
           const quiz = await repository.findOne({ name: quizName.replace(/:/g, "") });
+
+          if (!quiz) {
+            return client.reply(message.from, `O questionário ${name} não existe!`, message.id);
+          }
       
           if (quiz.status === "open") {
             if (quiz.answers.includes(answerToRemove)) {
@@ -90,11 +105,10 @@ class QuizService {
               await repository.update(quiz.id, quiz);
               return client.reply(message.from, `Resposta ${answerToRemove} removida com sucesso!`, message.id);
             }
+            return client.reply(message.from, `Resposta ${answerToRemove} não existe.`, message.id);
           } else {
             return client.reply(message.from, `Este questionário está fechado.`, message.id);
           }
-      
-          return client.reply(message.from, `Resposta ${answerToRemove} não existe.`, message.id);
         } else {
           return client.reply(message.from, "Desculpe, apenas administradores podem usar este comando!", message.id);
         }
@@ -109,8 +123,13 @@ class QuizService {
         //@ts-ignore
         if (admins.some((admin) => admin.user === participante.id.user)) { 
           const quizRepository = getCustomRepository(QuizRepository);
-          const name = message.body.trim().replace(/!stop /, "");
+          const name = message.body.trim().replace(/!stopQuiz /, "");
           const quiz = await quizRepository.findOne({ name, group_id: message.chat.id });
+
+          if (!quiz) {
+            return client.reply(message.from, `O questionário ${name} não existe!`, message.id);
+          }
+
           if (quiz.status !== "closed") {
             quiz.status = "closed";
             await quizRepository.update(quiz.id, quiz);
@@ -135,6 +154,18 @@ class QuizService {
     let quiz = await quizRepository.findOne({ name: quizName, group_id: message.chat.id });
     let userVoted = await votesRepository.findOne({ user_id: message.sender.id, quiz_id: quiz.id });
 
+    if (!quiz) {
+      return client.reply(message.from, `O questionário ${quizName} não existe!`, message.id);
+    }
+    
+    if (quiz.status === "closed") {
+      return client.reply(message.from, `O quiz ${quizName} já foi fechado e não é mais possível votar.`, message.id);
+    }
+
+    if (!quiz.answers.includes(userVote)) {
+      return client.reply(message.from, `A resposta ${userVote} não existe neste questionário!`, message.id);
+    }
+
     if (userVoted) {
       return client.reply(message.from, "Você pode votar apenas uma vez!", message.id);
     } 
@@ -142,12 +173,6 @@ class QuizService {
     if (userVote.length < 1) {
       return client.reply(message.from, "Você deve digitar o !vote <nome do questionário>: <seguido do voto>", message.id);
     }
-    
-    if (quiz.status === "closed") {
-      return client.reply(message.from, `O quiz ${quizName} já foi fechado e não é possível votar.`, message.id);
-    }
-
-    console.log("quiz: ", quiz)
 
     const newVote = votesRepository.create({
       user_id: message.sender.id,
@@ -164,7 +189,6 @@ class QuizService {
   async listQuiz(client: Whatsapp, message: Message) {
     const repository = getCustomRepository(QuizRepository);
     const group_id = message.chat.id;
-
     const allQuiz = await repository.find({ group_id });
 
     if(allQuiz.length > 0) {
@@ -201,7 +225,7 @@ class QuizService {
         answerVotes.push(answer.trim() + " " + counter);
       });
 
-      const formattedQuiz: string = `Nome: ${quiz.name} \nCriado em: ${quiz.created_at} \nRespostas:\n${answerVotes.join("\n")}`
+      const formattedQuiz: string = `Nome: ${quiz.name} \nStatus: ${quiz.status} \nCriado em: ${quiz.created_at} \nRespostas:\n${answerVotes.join("\n")}`
       return client.reply(message.from, formattedQuiz, message.id);
     } else {
       return client.reply(message.from, `Não existe um questionário com o nome ${name}`, message.id);

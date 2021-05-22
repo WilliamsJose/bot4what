@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/index.ts",
     "typeorm": "ts-node-dev node_modules/typeorm/cli.js",
-    "winrenew": "del .\\tokens\\venombot.data.json",
-    "linrenew": "rm ./tokens/venombot.data.json",
+    "wr-token": "del .\\tokens\\venombot.data.json",
+    "lr-token": "rm ./tokens/venombot.data.json",
     "build": "tsc"
   },
   "dependencies": {
