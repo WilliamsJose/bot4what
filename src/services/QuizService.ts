@@ -69,8 +69,10 @@ class QuizService {
             quiz.answers = newAnswers;
         
             await repository.update(quiz.id, quiz);
+
+            let isPlural = newAnswer.includes(",");
         
-            return client.reply(message.from, `Resposta ${newAnswer} adicionada com sucesso`, message.id);
+            return client.reply(message.from, `Respost${isPlural?"as":"a"} ${newAnswer} adicionad${isPlural?"as":"a"} com sucesso!`, message.id);
           } else {
             return client.reply(message.from, `Este questionário está fechado.`, message.id);
           }
