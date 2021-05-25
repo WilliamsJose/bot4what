@@ -5,11 +5,11 @@ import QuizService from "../services/QuizService";
 
 export default class MessagesController {
   static checkMessage(client: Whatsapp, message: Message) {
-    if (message.body === "@everyone" && message.isGroupMsg) {
+    if (message.body.startsWith("@everyone") && message.isGroupMsg) {
       MentionService.mention(client, message)
     }
 
-    if (message.body === "!help" && message.isGroupMsg) {
+    if (message.body.startsWith("!help") && message.isGroupMsg) {
       HelpService.help(client, message)
     }
 
